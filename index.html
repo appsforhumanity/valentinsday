@@ -113,6 +113,8 @@
       left: 62%;
       background: #e8e8e8;
       color: #333;
+      transition: none;
+      will-change: left, top;
     }
 
     .hint {
@@ -280,7 +282,9 @@
       growYes();
     }
 
-    const dodgeRadius = "ontouchstart" in window ? 160 : 140;
+    const isTouch = "ontouchstart" in window;
+    const dodgeRadius = isTouch ? 180 : 140;
+
     zone.addEventListener("pointermove", (e) => {
       const b = noBtn.getBoundingClientRect();
       const d = Math.hypot(
@@ -290,7 +294,21 @@
       if (d < dodgeRadius) moveNo(e.clientX, e.clientY);
     });
 
+    /* On touch: also dodge on pointerdown so a tap triggers instant movement */
+    zone.addEventListener("pointerdown", (e) => {
+      const b = noBtn.getBoundingClientRect();
+      const d = Math.hypot(
+        (b.left + b.width / 2) - e.clientX,
+        (b.top + b.height / 2) - e.clientY
+      );
+      if (d < dodgeRadius + 30) moveNo(e.clientX, e.clientY);
+    });
+
     noBtn.addEventListener("click", (e) => e.preventDefault());
+    noBtn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      moveNo(e.clientX, e.clientY);
+    });
 
     yesBtn.addEventListener("click", () => {
       zone.style.display = "none";
